@@ -33,7 +33,7 @@ setup(name='PRALINE',
       author = 'Maurits Dijkstra',
       author_email = 'mauritsdijkstra@gmail.com',
       url = 'http://www.few.vu.nl/',
-      license = "MIT",
+      license = "GPL",
 
       ext_modules = [ext_calign],
       install_requires = ['numpy>=1.6.1', 'falcon>=0.3.0',
