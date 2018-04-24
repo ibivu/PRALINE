@@ -1,0 +1,10 @@
+*.pyc
+*.out
+*.fasta
+input/
+build/
+*.egg-info
+_build/
+*.so
+.DS_Store
+*.egg
