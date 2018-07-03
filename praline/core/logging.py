@@ -5,14 +5,18 @@ not require it to be able to continue.
 .. moduleauthor:: Maurits Dijkstra <mauritsdijkstra@gmail.com>
 
 """
+from __future__ import division, absolute_import, print_function
+
+import six.moves.urllib.parse
+import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
+
 import tempfile
 import os.path
 import shutil
 import uuid
-import urlparse
-import urllib
 
-from exception import *
+
+from .exception import *
 
 ROOT_LOG_NAME = "component.log"
 
@@ -48,7 +52,7 @@ class LogBundle(object):
 
     def path(self, filename):
         """Return a path within the bundle. This is mainly useful for
-        capturing the output of external programs that can't be 
+        capturing the output of external programs that can't be
         redirected to write to a file object.
 
         :param filename: the filename to construct a bundle path from
@@ -62,7 +66,7 @@ class LogBundle(object):
     def file(self, filename, mode='w'):
         """Returns an open file object pointing to the path given by a
         filename inside the bundle. This can be used to write logging
-        information directly from Python code (generally from within a 
+        information directly from Python code (generally from within a
         component) or by redirecting the standard output of an external
         program.
 
@@ -72,11 +76,11 @@ class LogBundle(object):
 
         """
         self._check_gone()
-        
+
         f = open(self.path(filename), mode)
         self._files.append(f)
 
-        return f 
+        return f
 
     def message(self, filename, message):
         """Writes a log message to the file at the given path inside
@@ -128,7 +132,7 @@ class LogBundle(object):
             self._gone = True
 
     def flush(self):
-        """Flushes all the open files to disk. This is called by archive() to 
+        """Flushes all the open files to disk. This is called by archive() to
         write any unwritten data before the archive is created.
 
         """
@@ -157,5 +161,5 @@ class LogBundle(object):
         return shutil.make_archive(tmp_name, 'gztar', self._basedir)
 
 def path_to_url(path):
-    return urlparse.urljoin(
-      'file:', urllib.pathname2url(path))
+    return six.moves.urllib.parse.urljoin(
+      'file:', six.moves.urllib.request.pathname2url(path))

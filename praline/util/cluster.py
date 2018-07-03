@@ -3,7 +3,11 @@
 .. moduleauthor:: Maurits Dijkstra <mauritsdijkstra@gmail.com>
 
 """
+from __future__ import division, absolute_import, print_function
+
 import numpy as np
+import six
+from six.moves import range
 
 INFINITY = 2**32
 
@@ -28,16 +32,16 @@ class HierarchicalClusteringAlgorithm(object):
         """
         linkage_fun = LINKAGES[linkage]
 
-        clusters = {i: {i} for i in xrange(self.distance_matrix.shape[0])}
+        clusters = {i: {i} for i in range(self.distance_matrix.shape[0])}
         while len(clusters) > 1:
             a = np.empty((len(clusters), len(clusters)), dtype=float)
             id_map = {}
 
             np.fill_diagonal(a, INFINITY)
 
-            for i, (c_one_id, c_one) in enumerate(clusters.iteritems()):
+            for i, (c_one_id, c_one) in enumerate(six.iteritems(clusters)):
                 id_map[i] = c_one_id
-                for j, (c_two_id, c_two) in enumerate(clusters.iteritems()):
+                for j, (c_two_id, c_two) in enumerate(six.iteritems(clusters)):
                     if c_one_id != c_two_id:
                         a[i, j] = linkage_fun(
                             self.distance_matrix, c_one, c_two)
@@ -47,7 +51,7 @@ class HierarchicalClusteringAlgorithm(object):
             merge_one_idx, merge_two_idx = merge_idxs
             merge_one_id = id_map[merge_one_idx]
             merge_two_id = id_map[merge_two_idx]
-            
+
             clusters[merge_one_id] |= clusters[merge_two_id]
             del clusters[merge_two_id]
             yield merge_one_id, merge_two_id
@@ -79,7 +83,7 @@ def _complete_linkage(distance_matrix, c_one, c_two):
     :param c_one: list of objects in cluster one
     :param c_two: list of objects in cluster two
     :returns: distance between clusters according to linkage method
-    
+
     """
     a = np.empty((len(c_one), len(c_two)), dtype=float)
     for i, c_one_id in enumerate(c_one):
@@ -97,7 +101,7 @@ def _average_linkage(distance_matrix, c_one, c_two):
     :param c_one: list of objects in cluster one
     :param c_two: list of objects in cluster two
     :returns: distance between clusters according to linkage method
-    
+
     """
     a = np.empty((len(c_one), len(c_two)), dtype=float)
     for i, c_one_id in enumerate(c_one):

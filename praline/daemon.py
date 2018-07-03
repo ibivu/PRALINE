@@ -1,15 +1,17 @@
+from __future__ import division, absolute_import, print_function
+
 from wsgiref.simple_server import make_server
 import argparse
 import json
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
 import threading
-import Queue as queue
 from uuid import uuid4 as uuid
 import sys
 
+try:
+    import six.moves.cPickle as pickle
+except ImportError:
+    import pickle
+import six.moves.queue as queue
 import falcon
 import itsdangerous
 
@@ -224,7 +226,7 @@ class JobList(object):
         self._data.clear()
 
     def list_jobs(self):
-        return self._data.values()
+        return list(self._data.values())
 
     def append_message(self, job_id, msg):
         try:
@@ -247,11 +249,11 @@ def main():
 
     if args.secret is None:
         warn_msg = "WARNING: no secret provided! using insecure default!"
-        print >>sys.stderr, warn_msg
+        print(warn_msg, file=sys.stderr)
 
         secret = "__MUCH_SECRITY__"
     else:
-        with file(args.secret, 'r') as f:
+        with open(args.secret, 'r') as f:
             secret = f.readline()
 
     job_list = JobList()

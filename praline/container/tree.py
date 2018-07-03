@@ -3,6 +3,8 @@
 .. moduleauthor:: Maurits Dijkstra <mauritsdijkstra@gmail.com>
 
 """
+from __future__ import division, absolute_import, print_function
+
 from praline.core import *
 
 class SequenceTree(Container):
@@ -21,5 +23,3 @@ class SequenceTree(Container):
     def __init__(self, sequences, merge_orders):
         self.merge_orders = merge_orders
         self.sequences = sequences
-
-

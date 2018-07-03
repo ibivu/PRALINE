@@ -3,9 +3,10 @@
 .. moduleauthor:: Maurits Dijkstra <mauritsdijkstra@gmail.com>
 
 """
-from __future__ import division
+from __future__ import division, absolute_import, print_function
 
 import numpy as np
+from six.moves import range, zip
 
 from praline.core import *
 from praline.container import Sequence, Alignment, ScoreMatrix
@@ -128,7 +129,7 @@ class LegacyPairwiseAligner(Component):
                 "for both sequences"
             raise ComponentError(s)
 
-        zipped = zip(track_id_sets_one, track_id_sets_two)
+        zipped = list(zip(track_id_sets_one, track_id_sets_two))
         for n, (track_ids_one, track_ids_two) in enumerate(zipped):
             if len(track_ids_one) != len(track_ids_two):
                 s = "should have an identical number of tracks to" \
@@ -152,7 +153,7 @@ class LegacyPairwiseAligner(Component):
             inputs = []
 
             score_matrix = score_matrices[n]
-            for i in xrange(len(track_ids_one)):
+            for i in range(len(track_ids_one)):
                 track_id_one = track_ids_one[i]
                 track_id_two = track_ids_two[i]
                 track_one = sequence_one.get_track(track_id_one)
@@ -183,7 +184,7 @@ class LegacyPairwiseAligner(Component):
                         if self.environment['squash_profiles']:
                             values = np.empty((track.profile.shape[0],),
                                               dtype=np.int32)
-                            for i in xrange(track.profile.shape[0]):
+                            for i in range(track.profile.shape[0]):
                                 values[i] = track.profile[i,:].argmax()
                             inputs.append(values)
                         else:
@@ -347,7 +348,7 @@ class PairwiseAligner(Component):
             raise ComponentError(s)
 
         input_sets = []
-        zipped = zip(track_id_sets_one, track_id_sets_two)
+        zipped = list(zip(track_id_sets_one, track_id_sets_two))
         for n, (track_ids_one, track_ids_two) in enumerate(zipped):
             score_matrix = score_matrices[n]
 
@@ -366,7 +367,7 @@ class PairwiseAligner(Component):
                 raise ComponentError(s)
 
             inputs = []
-            for i in xrange(len(track_ids_one)):
+            for i in range(len(track_ids_one)):
                 track_id_one = track_ids_one[i]
                 track_id_two = track_ids_two[i]
                 track_one = sequence_one.get_track(track_id_one)
@@ -395,7 +396,7 @@ class PairwiseAligner(Component):
                         # Upconvert the sequence track to a profile.
                         profile = np.zeros((len(track), track.alphabet.size),
                                            dtype=np.float32)
-                        for j in xrange(len(track)):
+                        for j in range(len(track)):
                             profile[j, track.values[j]] = 1.0
                         inputs.append(profile)
                     elif track.tid == ProfileTrack.tid:
@@ -641,14 +642,14 @@ class RawPairwiseAligner(Component):
             trace_from_row = mode in {"semiglobal_both", "semiglobal_two"}
 
             if last_row_max > last_col_max and trace_from_row:
-                for i in xrange(m-1, -1, -1):
-                    for j in xrange(3):
+                for i in range(m-1, -1, -1):
+                    for j in range(3):
                         if last_row[i, j] == last_row_max:
                             break
                 cell = (n-1, i, j)
             else:
-                for i in xrange(n-1, -1, -1):
-                    for j in xrange(3):
+                for i in range(n-1, -1, -1):
+                    for j in range(3):
                         if last_col[i, j] == last_col_max:
                             break
                 cell = (i, m-1, j)
@@ -682,7 +683,7 @@ def build_nonzero_matrix(i):
     nonzero_mat = np.empty((rows, cols), dtype=np.intp)
     nonzero_mat.fill(-1)
 
-    for n in xrange(rows):
+    for n in range(rows):
         row = i[n, :].nonzero()[0]
         nonzero_mat[n, :row.shape[0]] = row
 

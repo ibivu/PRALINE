@@ -4,11 +4,12 @@
 
 """
 
-from __future__ import division
+from __future__ import division, absolute_import, print_function
 
 import numpy as np
+from six.moves import range
 
-from support import window
+from .support import window
 
 # Traceback bit flags for the pairwise reference (legacy) aligner.
 TRACEBACK_UP = 1 << 1
@@ -46,8 +47,8 @@ def align(m, g1, g2, o, t, z, mode):
     # Fill in the matrices according to the recurrence relations.
     # Loop through them in linear fashion so we know we never have any problems
     # with dependencies between cells.
-    for y in xrange(1, m.shape[0] + 1):
-        for x in xrange(1, m.shape[1] + 1):
+    for y in range(1, m.shape[0] + 1):
+        for x in range(1, m.shape[1] + 1):
             has_up = y > 0
             has_left = x > 0
             has_upleft = has_up and has_left
@@ -236,7 +237,7 @@ def get_frequencies(alignment, trid):
     seqs = [track.values for track in tracks]
 
     freqs = np.zeros((path.shape[0]-1, alphabet.size), dtype=int)
-    for i, i_next in window(range(path.shape[0])):
+    for i, i_next in window(list(range(path.shape[0]))):
         inc_cols = (path[i_next, :]-path[i, :]) > 0
         for j, inc_col in enumerate(inc_cols):
             if inc_col:
@@ -257,7 +258,7 @@ def compress_path(path, compress_idx):
     """
     keep_idxs = [0]
 
-    for i, i_next in window(range(path.shape[0])):
+    for i, i_next in window(list(range(path.shape[0]))):
         inc_cols = (path[i_next, :]-path[i, :]) > 0
         if inc_cols[compress_idx]:
             keep_idxs.append(i_next)

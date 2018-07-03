@@ -4,7 +4,10 @@ default track identifiers.
 .. moduleauthor:: Maurits Dijkstra <mauritsdijkstra@gmail.com>
 
 """
+from __future__ import division, absolute_import, print_function
+
 import numpy as np
+from six.moves import range
 
 from praline.core import *
 from praline.util import window
@@ -105,7 +108,7 @@ class Sequence(Container):
         they identify.
 
         """
-        return self._tracks.items()
+        return list(self._tracks.items())
 
     def __repr__(self):
         f = "<Sequence name='{0}' length={1}>"
@@ -223,7 +226,7 @@ class ProfileTrack(Track):
 
         size = (path.shape[0]-1, self.counts.shape[1])
         merged_counts = np.zeros(size, dtype=np.float32)
-        for i, i_next in window(range(path.shape[0])):
+        for i, i_next in window(list(range(path.shape[0]))):
             inc_cols = (path[i_next, :]-path[i, :]) > 0
             for j, inc_col in enumerate(inc_cols):
                 if inc_col:

@@ -3,6 +3,7 @@
 .. moduleauthor:: Maurits Dijkstra <mauritsdijkstra@gmail.com>
 
 """
+from __future__ import division, absolute_import, print_function
 
 from praline.core import *
 from praline.container import Sequence, Alignment, ScoreMatrix
@@ -155,7 +156,7 @@ class PralineMultipleSequenceAlignmentWorkflow(Component):
 
         for msg in execution.run():
             yield msg
-        
+
         for n, output in enumerate(execution.outputs):
             self._master_slave_alignments[n] = output['alignment']
 

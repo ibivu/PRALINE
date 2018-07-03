@@ -3,9 +3,14 @@
 .. moduleauthor:: Maurits Dijkstra <mauritsdijkstra@gmail.com>
 
 """
+from __future__ import division, absolute_import, print_function
+
 import numpy as np
+from six.moves import range
+from six.moves import zip
 
 from praline.core import *
+
 
 
 class Alphabet(Container):
@@ -68,7 +73,7 @@ class Alphabet(Container):
         """Return all the symbols defined by this alphabet.
 
         """
-        return self._mappings.keys()
+        return list(self._mappings.keys())
 
     @property
     def size(self):
@@ -90,7 +95,7 @@ def _generate_mappings(symbols):
     :returns: a list of 2-tuples containing the generated mapping between
         symbols and indices
     """
-    return zip(symbols, range(len(symbols)))
+    return list(zip(symbols, list(range(len(symbols)))))
 
 _SYMBOLS_AA = [u'A', u'R', u'N', u'D', u'C', u'E', u'Q', u'G', u'H', u'I',
                u'L', u'K', u'M', u'F', u'P', u'S', u'T', u'W', u'Y', u'V',

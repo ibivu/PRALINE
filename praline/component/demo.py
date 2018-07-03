@@ -3,13 +3,14 @@
 .. moduleauthor:: Maurits Dijkstra <mauritsdijkstra@gmail.com>
 
 """
-from __future__ import division
+from __future__ import division, absolute_import, print_function
 
 import subprocess
 import shutil
 import tempfile
 
 import numpy as np
+from six.moves import range
 
 from praline import load_alignment_markx3
 from praline.core import *
@@ -17,7 +18,7 @@ from praline.container import Sequence, Alignment, ScoreMatrix, TRACK_ID_INPUT
 from praline.container import SCORE_MATRIX_DEFAULT, PlainTrack
 
 class NeedleAligner(Component):
-    """This is a demo component that is supposed to show the advanced 
+    """This is a demo component that is supposed to show the advanced
     capabilities of the new PRALINE suite. It implements a pairwise
     aligner by writing out the inputs as fasta files, calling EMBOSS
     needle on it and parsing its output as an alignment container object
@@ -28,7 +29,7 @@ class NeedleAligner(Component):
     Inputs:
     * sequence_one - a sequence object containing the first sequence to align
     * sequence_two - a sequence object containing the second sequence to align
-    * track_ids_one - a list of strings containing the track ids of the 
+    * track_ids_one - a list of strings containing the track ids of the
                       tracks of the first sequence to align sequence to align
     * track_ids_two - a list of strings containing the track ids of the tracks
                       of the second sequence to align
@@ -59,16 +60,16 @@ class NeedleAligner(Component):
               'zero_idxs': Port([(int, int)], optional = True)}
     outputs = {'alignment': Port(Alignment.tid), 'score': Port(float)}
 
-    options = {'gap_series': [int], 'local': bool, 
+    options = {'gap_series': [int], 'local': bool,
                'score_matrix': ScoreMatrix.tid}
     defaults = {'gap_series': [-11, -1], 'local': False,
                 'score_matrix': SCORE_MATRIX_DEFAULT}
 
-    def execute(self, sequence_one, sequence_two, track_ids_one, 
+    def execute(self, sequence_one, sequence_two, track_ids_one,
                 track_ids_two, zero_idxs):
         score_matrix = self.environment['score_matrix']
         local = self.environment['local']
-        gap_series = np.array(self.environment['gap_series'], 
+        gap_series = np.array(self.environment['gap_series'],
                               dtype=np.float32)
 
         if len(track_ids_one) != len(track_ids_two):
@@ -91,7 +92,7 @@ class NeedleAligner(Component):
             raise ComponentError(s)
 
         inputs = []
-        for i in xrange(len(track_ids_one)):
+        for i in range(len(track_ids_one)):
             track_id_one = track_ids_one[i]
             track_id_two = track_ids_two[i]
             track_one = sequence_one.get_track(track_id_one)
@@ -101,7 +102,7 @@ class NeedleAligner(Component):
                 s = "track {0} for sequence one has alphabet '{1}' but " \
                     "the corresponding dimension in the score matrix has " \
                     "alphabet '{2}'"
-                s = s.format(i, track_one.alphabet.aid, 
+                s = s.format(i, track_one.alphabet.aid,
                              score_matrix.alphabets[i*2].aid)
                 raise DataError(s)
 
@@ -109,11 +110,11 @@ class NeedleAligner(Component):
                 s = "track {0} for sequence two has alphabet '{1}' but " \
                     "the corresponding dimension in the score matrix has " \
                     "alphabet '{2}'"
-                s = s.format(i, track_two.alphabet.aid, 
+                s = s.format(i, track_two.alphabet.aid,
                              score_matrix.alphabets[(i*2)+1].aid)
                 raise DataError(s)
 
-            for track in [track_one, track_two]:            
+            for track in [track_one, track_two]:
                 if track.tid == PlainTrack.tid:
                     inputs.append(track.values)
                 else:
@@ -122,7 +123,7 @@ class NeedleAligner(Component):
                     raise DataError(s)
 
         try:
-            temp_root = tempfile.mkdtemp()      
+            temp_root = tempfile.mkdtemp()
             output_fasta_path = os.path.join(temp_root, 'output.fasta')
             input_one_fasta_path = os.path.join(temp_root, 'input_one.fasta')
             input_two_fasta_path = os.path.join(temp_root, 'input_two.fasta')
@@ -130,7 +131,7 @@ class NeedleAligner(Component):
             write_sequence_fasta(input_one_fasta_path, [sequence_one], track_ids_one[0])
             write_sequence_fasta(input_two_fasta_path, [sequence_two], track_ids_two[0])
 
-            args = ["needle", input_one_fasta_path, input_two_fasta_path, output_fasta_path, 
+            args = ["needle", input_one_fasta_path, input_two_fasta_path, output_fasta_path,
                     "-aformat3", "markx3", "-gapopen", "10.0", "-gapextend", "0.5"]
             subprocess.check_call(args)
 

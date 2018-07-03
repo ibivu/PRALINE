@@ -3,7 +3,7 @@
 .. moduleauthor:: Maurits Dijkstra <mauritsdijkstra@gmail.com>
 
 """
-from __future__ import division
+from __future__ import division, absolute_import, print_function
 
 import numpy as np
 
@@ -13,7 +13,7 @@ from praline.container import Alignment, ProfileTrack, Alphabet
 
 
 class ProfileBuilder(Component):
-    """This is a very simple component used in the construction of a 
+    """This is a very simple component used in the construction of a
     ProfileTrack from an alignment. It first gets the frequencies of each
     symbol type for every sequence position and then feeds these to the
     profile track to build a profile.
@@ -31,7 +31,7 @@ class ProfileBuilder(Component):
     """
     tid = "praline.component.ProfileBuilder"
 
-    inputs = {'alignment': Port(Alignment.tid), 
+    inputs = {'alignment': Port(Alignment.tid),
               'track_id': Port(str)}
     outputs = {'profile_track': Port(ProfileTrack.tid)}
 

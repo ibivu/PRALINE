@@ -3,7 +3,7 @@
 .. moduleauthor:: Maurits Dijkstra <mauritsdijkstra@gmail.com>
 
 """
-from __future__ import division
+from __future__ import division, absolute_import, print_function
 
 import numpy as np
 

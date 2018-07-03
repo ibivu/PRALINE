@@ -4,11 +4,16 @@
 
 """
 
+from __future__ import division, absolute_import, print_function
+
 import sys
 import os
 import uuid
-import urlparse
 import tarfile
+
+import six
+import six.moves.urllib.parse
+
 
 _LINE_FMT = "{0}{1:<{width}.{width}} {2:<5.5}   [{3:<35}] {4:>6.1%}\n"
 
@@ -48,7 +53,7 @@ def write_log_structure(node, path=None):
 
 
 def unpack_log_bundle(url, path):
-    u = urlparse.urlparse(url)
+    u = six.moves.urllib.parse.urlparse(url)
     if u.scheme == 'file':
         if not tarfile.is_tarfile(u.path):
             return
@@ -79,7 +84,7 @@ def serialize(node, level=-1):
         s = format_line(node, level=level)
     else:
         s = ""
-    for child in node.children.itervalues():
+    for child in six.itervalues(node.children):
         if not child.complete:
             s += serialize(child, level=level + 1)
     return s

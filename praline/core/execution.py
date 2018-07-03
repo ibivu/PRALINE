@@ -4,14 +4,19 @@ code and other components.
 .. moduleauthor:: Maurits Dijkstra <mauritsdijkstra@gmail.com>
 
 """
+from __future__ import division, absolute_import, print_function
 
 from collections import OrderedDict
 from uuid import uuid4 as uuid
 
-from component import MESSAGE_KIND_BEGIN, MESSAGE_KIND_COMPLETE
-from component import MESSAGE_KIND_LOG, MESSAGE_KIND_PROGRESS
-from component import Environment
-from exception import *
+import six
+from six.moves import range
+
+from .component import MESSAGE_KIND_BEGIN, MESSAGE_KIND_COMPLETE
+from .component import MESSAGE_KIND_LOG, MESSAGE_KIND_PROGRESS
+from .component import Environment
+from .exception import *
+
 
 class TaskNode(object):
     """A node in a component execution graph. This graph is constructed
@@ -81,7 +86,7 @@ class TaskNode(object):
 
         """
         self.complete = True
-        for node in self.children.itervalues():
+        for node in six.itervalues(self.children):
             node.finish()
 
     def _propagate(self, msg):
@@ -90,7 +95,7 @@ class TaskNode(object):
         :param msg: the message to propagate to the children of this node
 
         """
-        for node in self.children.itervalues():
+        for node in six.itervalues(self.children):
             if not node.complete:
                 node.update(msg)
 
@@ -104,7 +109,7 @@ class TaskNode(object):
         else:
             acc = 0
 
-        for node in self.children.itervalues():
+        for node in six.itervalues(self.children):
             if not node.complete:
                 acc += node.num_leaves(level=level + 1)
 
@@ -158,7 +163,7 @@ class Execution(object):
         """
         tag_idx_map = {}
         reqs = []
-        self._outputs = [None for x in xrange(len(self._tasks))]
+        self._outputs = [None for x in range(len(self._tasks))]
 
         task_iter = enumerate(t.get() for t in self._tasks)
         for i, (component, env, inputs, tag) in task_iter:
@@ -239,7 +244,7 @@ class Task(object):
         if self._inputs is None:
             self._inputs = {}
 
-        for k, v in kwargs.iteritems():
+        for k, v in six.iteritems(kwargs):
             self._inputs[k] = v
 
         return self

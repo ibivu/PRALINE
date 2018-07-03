@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
+from __future__ import division, absolute_import, print_function
+
 from setuptools import setup, find_packages, Extension
 import numpy as np
-
 
 entry_points = []
 entry_points.append('PairwiseAligner = praline.component:PairwiseAligner')
@@ -28,7 +29,7 @@ ext_calign = Extension("praline.util.cext", ["praline/util/cext.c"],
                        extra_compile_args=["-std=c99", "-ffast-math", "-O3"])
 
 setup(name='PRALINE',
-      version = '1.0',
+      version = '1.1',
       description = 'PRALINE sequence alignment toolkit',
       author = 'Maurits Dijkstra',
       author_email = 'mauritsdijkstra@gmail.com',
@@ -37,7 +38,7 @@ setup(name='PRALINE',
 
       ext_modules = [ext_calign],
       install_requires = ['numpy>=1.6.1', 'falcon>=0.3.0',
-                          'itsdangerous>=0.24'],
+                          'itsdangerous>=0.24','six>=1.10.0'],
       packages = ['praline', 'praline.core', 'praline.container',
                   'praline.component', 'praline.util'],
       package_data = {

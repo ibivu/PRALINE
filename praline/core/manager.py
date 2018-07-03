@@ -3,26 +3,30 @@
 .. moduleauthor:: Maurits Dijkstra <mauritsdijkstra@gmail.com>
 
 """
+from __future__ import division, absolute_import, print_function
+
 from uuid import uuid4 as uuid
 from multiprocessing import Queue, Process, cpu_count, BoundedSemaphore, Lock
 from multiprocessing import Manager as MultiprocessingManager
 from threading import Thread
-from Queue import Empty, Queue as TQueue
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
-import urllib2
 import time
 import pkg_resources
 
+from six.moves.queue import Empty, Queue as TQueue
+import six
+from six.moves import range, zip
+try:
+    import six.moves.cPickle as pickle
+except ImportError:
+    import pickle
+import six.moves.urllib.request, six.moves.urllib.error, six.moves.urllib.parse
 import itsdangerous
 
-from exception import *
-from component import Component, Message, Container, T, ErrorMessage
-from component import MESSAGE_KIND_COMPLETE, MESSAGE_KIND_ERROR
-from component import MESSAGE_KIND_BEGIN, CompleteMessage
-from component import ALLOWED_PRIMITIVE_TYPES, BeginMessage
+from .exception import *
+from .component import Component, Message, Container, T, ErrorMessage
+from .component import MESSAGE_KIND_COMPLETE, MESSAGE_KIND_ERROR
+from .component import MESSAGE_KIND_BEGIN, CompleteMessage
+from .component import ALLOWED_PRIMITIVE_TYPES, BeginMessage
 
 ENTRY_POINT_GROUP = 'praline.type'
 
@@ -188,10 +192,10 @@ class Manager(object):
         component_class = self.index.resolve(tid)
         component = component_class(submanager, environment, tag)
 
-        for key, value in component.options.iteritems():
+        for key, value in six.iteritems(component.options):
             _conforms_signature(value, environment[key])
 
-        for name, port in component.inputs.iteritems():
+        for name, port in six.iteritems(component.inputs):
             inputs[name] = inputs.get(name, None)
 
             if inputs[name] is None and not port.optional:
@@ -214,7 +218,7 @@ class Manager(object):
                 message.tag = tag
 
             if message.kind == MESSAGE_KIND_COMPLETE and message.tag == tag:
-                for name, port in component.outputs.iteritems():
+                for name, port in six.iteritems(component.outputs):
                     message.outputs[name] = message.outputs.get(name, None)
                     if message.outputs[name] is None and not port.optional:
                         s = "output '{0}' is not optional but was not supplied"
@@ -293,11 +297,11 @@ class ParallelExecutionManager(Manager):
         if concurrent_tasks is None:
             concurrent_tasks = cpu_count()
 
-        self.batch_queues = [Queue() for i in xrange(concurrent_tasks)]
-        self.out_queues = [Queue() for i in xrange(concurrent_tasks)]
-        self.locks = [Lock() for i in xrange(concurrent_tasks)]
+        self.batch_queues = [Queue() for i in range(concurrent_tasks)]
+        self.out_queues = [Queue() for i in range(concurrent_tasks)]
+        self.locks = [Lock() for i in range(concurrent_tasks)]
         self.processes = []
-        for i in xrange(concurrent_tasks):
+        for i in range(concurrent_tasks):
             args = (self, self.batch_queues[i], self.out_queues[i])
             process = Process(target=_worker, args=args)
             process.daemon = True
@@ -325,7 +329,7 @@ class ParallelExecutionManager(Manager):
                 batch_id = uuid().hex
                 batch = []
                 try:
-                    for n in xrange(batch_size):
+                    for n in range(batch_size):
                         batch.append(requests.pop())
                 except IndexError as e:
                     pass
@@ -344,7 +348,7 @@ class ParallelExecutionManager(Manager):
 
         # Check if we already have a thread worker running.
         thread_worker_running = False
-        for type_, lock, queue in running_map.itervalues():
+        for type_, lock, queue in six.itervalues(running_map):
             if type_ == WORKER_TYPE_THREAD:
                 thread_worker_running = True
 
@@ -361,7 +365,7 @@ class ParallelExecutionManager(Manager):
             batch_id = uuid().hex
             batch = []
             try:
-                for n in xrange(batch_size):
+                for n in range(batch_size):
                     batch.append(requests.pop())
             except IndexError as e:
                 pass
@@ -423,7 +427,7 @@ class ParallelExecutionManager(Manager):
             if pending_requests:
                 self._schedule_requests(pending_requests, parent_tag,
                                         running_map, job_map)
-                queues = [q for t, l, q in running_map.itervalues()]
+                queues = [q for t, l, q in six.itervalues(running_map)]
 
             while True:
                 should_reschedule = False
@@ -512,8 +516,8 @@ class RemoteManager(Manager):
         headers['Content-Type'] = 'application/python-pickle'
         headers['Accept'] = 'application/python-pickle'
         url = "http://{0}:{1}/jobs/".format(self.host, self.port)
-        req = urllib2.Request(url, data, headers)
-        res = self._serializer.loads(urllib2.urlopen(req).read())
+        req = six.moves.urllib.request.Request(url, data, headers)
+        res = self._serializer.loads(six.moves.urllib.request.urlopen(req).read())
         job_id = res["job_id"]
 
         start_at = 0
@@ -554,8 +558,8 @@ class RemoteManager(Manager):
         headers = {}
         headers['Accept'] = 'application/python-pickle'
 
-        req = urllib2.Request(url, None, headers)
-        res = urllib2.urlopen(req).read()
+        req = six.moves.urllib.request.Request(url, None, headers)
+        res = six.moves.urllib.request.urlopen(req).read()
 
         return pickle.loads(res)
 

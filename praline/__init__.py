@@ -4,20 +4,21 @@
 
 """
 
-from __future__ import division
+from __future__ import division, absolute_import, print_function
 
 from uuid import uuid4 as uuid
 from pkg_resources import resource_stream
 import codecs
 
 import numpy as np
+from six.moves import range, zip
 
 from praline.container import ScoreMatrix, Alphabet, Sequence, PlainTrack
 from praline.container import ProfileTrack, Alignment, TRACK_ID_INPUT
 from praline.core import *
 from praline.util import window, blocks
 
-def _get_lines(f, encoding, binary):
+def _get_lines(f, encoding):
     """ Read all the lines from a file object or filename string.
 
     :param f: filename string or file object to read lines from
@@ -26,16 +27,19 @@ def _get_lines(f, encoding, binary):
 
     """
     if isinstance(f, str):
-        if binary:
-            with open(f, 'r+') as f:
-                lines = f.readlines()
-        else:
-            with codecs.open(f, 'r', encoding) as f:
-                lines = f.readlines()
+        with codecs.open(f, 'r', encoding=encoding) as f:
+            lines = f.readlines()
     else:
         lines = f.readlines()
 
-    return lines
+    decoded_lines = []
+    for line in lines:
+        if isinstance(line, bytes):
+            decoded_lines.append(line.decode(encoding))
+        else:
+            decoded_lines.append(line)
+
+    return decoded_lines
 
 def _strip_comments(line, begin_char = '#'):
     """ Strip comments from a line.
@@ -59,7 +63,7 @@ def open_builtin(name):
 
     return resource_stream(__name__, name)
 
-def load_score_matrix(f, alphabet=None, encoding='utf-8', binary=False):
+def load_score_matrix(f, alphabet=None, encoding='utf-8'):
     """Read a score matrix into a ScoreMatrix object.
 
     :param f: filename or file object to read score matrix from
@@ -69,7 +73,7 @@ def load_score_matrix(f, alphabet=None, encoding='utf-8', binary=False):
 
     """
 
-    lines = [_strip_comments(l).strip() for l in _get_lines(f, encoding, binary)]
+    lines = [_strip_comments(l).strip() for l in _get_lines(f, encoding)]
     lines = [line.split() for line in lines if len(line) > 0]
 
     symbol_map = {}
@@ -94,14 +98,14 @@ def load_score_matrix(f, alphabet=None, encoding='utf-8', binary=False):
     # one based on the symbols defined within the matrix file.
     # This should almost never be used, though...
     if not alphabet:
-        mappings = zip(symbol_map.values(), symbol_map.keys())
+        mappings = list(zip(list(symbol_map.values()), list(symbol_map.keys())))
         aid = "__anonymous_from_matrix_{0}__".format(uuid().hex)
         alphabet = Alphabet(aid, mappings)
 
     return ScoreMatrix(scores, [alphabet, alphabet])
 
 
-def load_sequence_fasta(f, alphabet, encoding='utf-8', binary=False):
+def load_sequence_fasta(f, alphabet, encoding='utf-8'):
     """Read a set of sequences in FASTA format into a
     ScoreMatrix object.
 
@@ -112,7 +116,7 @@ def load_sequence_fasta(f, alphabet, encoding='utf-8', binary=False):
 
     """
 
-    lines = _get_lines(f, encoding, binary)
+    lines = _get_lines(f, encoding)
     seqs = []
     header = None
     seq = ""
@@ -134,8 +138,8 @@ def load_sequence_fasta(f, alphabet, encoding='utf-8', binary=False):
 
     return seqs
 
-def load_alignment_fasta(f, alphabet, encoding='utf-8', binary=False):
-    lines = _get_lines(f, encoding, binary)
+def load_alignment_fasta(f, alphabet, encoding='utf-8'):
+    lines = _get_lines(f, encoding)
 
     headers = []
     aln_seqs = []
@@ -176,8 +180,8 @@ def load_alignment_fasta(f, alphabet, encoding='utf-8', binary=False):
 
     path = np.empty((consensus_len + 1, len(aln_seqs)), dtype=int)
     path[0, :] = 0
-    for i in xrange(1, path.shape[0]):
-        for j in xrange(path.shape[1]):
+    for i in range(1, path.shape[0]):
+        for j in range(path.shape[1]):
             sym = aln_seqs[j][i - 1]
             if sym == '-':
                 path[i, j] = path[i-1, j]
@@ -197,7 +201,7 @@ def load_alignment_fasta(f, alphabet, encoding='utf-8', binary=False):
 
     return alignment
 
-def write_sequence_fasta(f, sequences, trid, encoding='utf-8', binary=False):
+def write_sequence_fasta(f, sequences, trid, encoding='utf-8'):
     """Write a collection of sequence objects in FASTA format.
 
     :param f: a filename or file object to write the alignment to
@@ -239,10 +243,7 @@ def write_sequence_fasta(f, sequences, trid, encoding='utf-8', binary=False):
 
     should_close = False
     if isinstance(f, str):
-        if binary:
-            f = open(f, 'w+')
-        else:
-            f = codecs.open(f, 'w', encoding)
+        f = codecs.open(f, 'w', encoding)
         should_close = True
 
     f.write("\n".join(lines))
@@ -251,8 +252,7 @@ def write_sequence_fasta(f, sequences, trid, encoding='utf-8', binary=False):
         f.close()
 
 
-def write_alignment_fasta(f, alignment, trid, line_length=72, encoding='utf-8',
-                          binary=False):
+def write_alignment_fasta(f, alignment, trid, line_length=72, encoding='utf-8'):
     """Write an alignment object in FASTA format.
 
     :param f: a filename or file object to write the alignment to
@@ -260,7 +260,6 @@ def write_alignment_fasta(f, alignment, trid, line_length=72, encoding='utf-8',
     :param trid: the track id of the sequence track to write
     :param line_length: at which length to wrap the alignment
     :param encoding: encoding to use while writing
-    :param binary: whether to write the alignment in binary mode
 
     """
     alphabet = None
@@ -273,9 +272,9 @@ def write_alignment_fasta(f, alignment, trid, line_length=72, encoding='utf-8',
         alphabet = track.alphabet
         tracks.append(track)
 
-    aligned = [[] for n in xrange(len(tracks)+1)]
+    aligned = [[] for n in range(len(tracks)+1)]
     path = alignment.path
-    for i, i_next in window(range(path.shape[0])):
+    for i, i_next in window(list(range(path.shape[0]))):
         inc_cols = (path[i_next, :]-path[i, :]) > 0
         symbols = []
 
@@ -294,10 +293,7 @@ def write_alignment_fasta(f, alignment, trid, line_length=72, encoding='utf-8',
 
     should_close = False
     if isinstance(f, str):
-        if binary:
-            f = open(f, 'w+')
-        else:
-            f = codecs.open(f, 'w', encoding)
+        f = codecs.open(f, 'w', encoding)
         should_close = True
 
     names = [sequence.name for sequence in alignment.items]
@@ -311,8 +307,7 @@ def write_alignment_fasta(f, alignment, trid, line_length=72, encoding='utf-8',
         f.close()
 
 
-def write_alignment_clustal(f, alignment, trid, score_matrix=None,
-                            encoding='utf-8', binary=False):
+def write_alignment_clustal(f, alignment, trid, score_matrix=None, encoding='utf-8'):
     """Write an alignment object in CLUSTAL format.
 
     :param f: a filename or file object to write the alignment to
@@ -321,7 +316,6 @@ def write_alignment_clustal(f, alignment, trid, score_matrix=None,
     :param score_matrix: if supplied, a score matrix used to
                          generate the conservation line
     :param encoding: encoding to use while writing
-    :param binary: whether to write the alignment in binary mode
 
     """
     alphabet = None
@@ -334,9 +328,9 @@ def write_alignment_clustal(f, alignment, trid, score_matrix=None,
         alphabet = track.alphabet
         tracks.append(track)
 
-    aligned = [[] for n in xrange(len(tracks)+1)]
+    aligned = [[] for n in range(len(tracks)+1)]
     path = alignment.path
-    for i, i_next in window(range(path.shape[0])):
+    for i, i_next in window(list(range(path.shape[0]))):
         inc_cols = (path[i_next, :]-path[i, :]) > 0
         symbols = []
 
@@ -379,7 +373,7 @@ def write_alignment_clustal(f, alignment, trid, score_matrix=None,
                             col_scores[j, k] = score_matrix.score(pair)
             else:
                 aligned[j].append('-')
-                for k in xrange(len(symbols)):
+                for k in range(len(symbols)):
                     col_scores[j, k] = 0
 
         # Append the conservation symbol if a score matrix has been provided,
@@ -419,10 +413,7 @@ def write_alignment_clustal(f, alignment, trid, score_matrix=None,
 
     should_close = False
     if isinstance(f, str):
-        if binary:
-            f = open(f, 'w+')
-        else:
-            f = codecs.open(f, 'w', encoding)
+        f = codecs.open(f, 'w', encoding)
         should_close = True
 
     f.write("CLUSTAL W format alignment, written by PRALINE\n\n\n")
@@ -448,8 +439,7 @@ def _consensus(row):
 
     return max_i
 
-def write_pssm(f, sequence, master_trid, profile_trid, score_matrix,
-               encoding='utf-8', binary=False):
+def write_pssm(f, sequence, master_trid, profile_trid, score_matrix, encoding='utf-8'):
     """Construct a position specific scoring matrix (PSSM) from a sequence
     profile track and a base scoring matrix and write it to a file in
     PSI-BLAST tab-delimited PSSM format.
@@ -492,11 +482,11 @@ def write_pssm(f, sequence, master_trid, profile_trid, score_matrix,
     legend.append("P")
     legend.append("C")
     legend.append("Master")
-    for i in xrange(alphabet.size):
+    for i in range(alphabet.size):
         legend.append(alphabet.index_to_symbol(i))
 
     rows = [legend]
-    for n in xrange(counts.shape[0]):
+    for n in range(counts.shape[0]):
         consensus_symbol = alphabet.index_to_symbol(_consensus(counts[n, :]))
         master_symbol = alphabet.index_to_symbol(master_track.values[n])
         profile_row = profile_track.profile[n, :]
@@ -515,10 +505,7 @@ def write_pssm(f, sequence, master_trid, profile_trid, score_matrix,
 
     should_close = False
     if isinstance(f, str):
-        if binary:
-            f = open(f, 'w+')
-        else:
-            f = codecs.open(f, 'w', encoding)
+        f = codecs.open(f, 'w', encoding)
         should_close = True
 
     f.write(data)

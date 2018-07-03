@@ -3,10 +3,15 @@
 .. moduleauthor:: Maurits Dijkstra <mauritsdijkstra@gmail.com>
 
 """
+from __future__ import division, absolute_import, print_function
+
 import numpy as np
+import six
+from six.moves import zip
 
 from praline.core import *
 from praline.container import ALPHABET_AA
+
 
 class MatchScoreModel(Container):
     """Container type containing information about the probability that
@@ -91,8 +96,8 @@ class ScoreMatrix(Container):
         size = tuple(alphabet.size for alphabet in self.alphabets)
         self.matrix = np.zeros(size, dtype=np.float32)
         if scores is not None:
-            for symbols, score in scores.iteritems():
-                pairs = zip(self.alphabets, symbols)
+            for symbols, score in six.iteritems(scores):
+                pairs = list(zip(self.alphabets, symbols))
                 indexes = tuple(a.symbol_to_index(s) for a, s in pairs)
                 self.matrix[indexes] = score
         else:
@@ -126,7 +131,7 @@ class ScoreMatrix(Container):
         :returns: the score of the provided combination of symbols
 
         """
-        pairs = zip(self.alphabets, symbols)
+        pairs = list(zip(self.alphabets, symbols))
         indexes = tuple(a.symbol_to_index(s) for a, s in pairs)
 
         return self.matrix[indexes]

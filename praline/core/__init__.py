@@ -3,8 +3,10 @@
 .. moduleauthor:: Maurits Dijkstra <mauritsdijkstra@gmail.com>
 
 """
-from component import *
-from manager import *
-from exception import *
-from logging import *
-from execution import *
+from __future__ import division, absolute_import, print_function
+
+from .component import *
+from .manager import *
+from .exception import *
+from .logging import *
+from .execution import *

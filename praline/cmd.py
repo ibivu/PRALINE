@@ -1,3 +1,5 @@
+from __future__ import division, absolute_import, print_function
+
 import sys
 import argparse
 import os
@@ -5,8 +7,9 @@ import uuid
 import shutil
 import tarfile
 import os.path
-import urlparse
 import atexit
+
+import six.moves.urllib.parse
 
 from praline import load_score_matrix, load_sequence_fasta, open_builtin
 from praline import write_alignment_clustal, write_alignment_fasta
@@ -30,7 +33,7 @@ def main():
         if args.remote_secret is None:
             secret = "__MUCH_SECRITY__"
         else:
-            with file(args.remote_secret, 'r') as f:
+            with open(args.remote_secret, 'r') as f:
                 secret = f.readline()
 
         manager = RemoteManager(index, args.remote_host, args.remote_port,
@@ -267,6 +270,6 @@ def parse_args():
 
 def open_resource(filename, prefix):
     try:
-        return file(filename)
+        return open(filename)
     except IOError:
         return open_builtin(os.path.join(prefix, filename))

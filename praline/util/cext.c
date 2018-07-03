@@ -484,26 +484,98 @@ cext_align_semiglobal_two(PyObject *self, PyObject *args)
     return cext_align(self, args, MODE_SEMIGLOBAL_TWO);
 }
 
-static PyMethodDef CextAlignMethods[] = {
-    {"cext_build_scores", cext_build_scores, METH_VARARGS,
-    "Build pairwise score matrix for the DP algorithm."},
-    {"cext_align_global",  cext_align_global, METH_VARARGS,
-     "Global alignment"},
-    {"cext_align_local",  cext_align_local, METH_VARARGS,
-     "Local alignment"},
-    {"cext_align_semiglobal_both",  cext_align_semiglobal_both,
-    METH_VARARGS, "Semi global alignment (both sequences)"},
-    {"cext_align_semiglobal_one",  cext_align_semiglobal_one,
-    METH_VARARGS, "Semi global alignment (sequence one only)"},
-    {"cext_align_semiglobal_two",  cext_align_semiglobal_two,
-    METH_VARARGS, "Semi global alignment (sequence two only)"},
-    {NULL, NULL, 0, NULL}
+/* Tricky to get this right for both Python 2 and 3. */
+struct module_state {
+    PyObject *error;
 };
 
+#if PY_MAJOR_VERSION >= 3
+#define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
+#else
+#define GETSTATE(m) (&_state)
+static struct module_state _state;
+#endif
+
+static PyObject *
+error_out(PyObject *m) {
+    struct module_state *st = GETSTATE(m);
+    PyErr_SetString(st->error, "something bad happened");
+    return NULL;
+}
+
+static PyMethodDef cext_methods[] = {
+    {"cext_build_scores", (PyCFunction)cext_build_scores, METH_VARARGS,
+    "Build pairwise score matrix for the DP algorithm."},
+    {"cext_align_global",  (PyCFunction)cext_align_global, METH_VARARGS,
+     "Global alignment"},
+    {"cext_align_local",  (PyCFunction)cext_align_local, METH_VARARGS,
+     "Local alignment"},
+    {"cext_align_semiglobal_both",  (PyCFunction)cext_align_semiglobal_both,
+    METH_VARARGS, "Semi global alignment (both sequences)"},
+    {"cext_align_semiglobal_one",  (PyCFunction)cext_align_semiglobal_one,
+    METH_VARARGS, "Semi global alignment (sequence one only)"},
+    {"cext_align_semiglobal_two",  (PyCFunction)cext_align_semiglobal_two,
+    METH_VARARGS, "Semi global alignment (sequence two only)"},
+    {NULL, NULL}
+};
+
+#if PY_MAJOR_VERSION >= 3
+
+static int cext_traverse(PyObject *m, visitproc visit, void *arg) {
+    Py_VISIT(GETSTATE(m)->error);
+    return 0;
+}
+
+static int cext_clear(PyObject *m) {
+    Py_CLEAR(GETSTATE(m)->error);
+    return 0;
+}
+
+
+static struct PyModuleDef moduledef = {
+        PyModuleDef_HEAD_INIT,
+        "cext",
+        NULL,
+        sizeof(struct module_state),
+        cext_methods,
+        NULL,
+        cext_traverse,
+        cext_clear,
+        NULL
+};
+
+#define INITERROR return NULL
+
 PyMODINIT_FUNC
+PyInit_cext(void)
+
+#else
+#define INITERROR return
+
+void
 initcext(void)
+#endif
 {
-    (void) Py_InitModule("cext", CextAlignMethods);
+#if PY_MAJOR_VERSION >= 3
+    PyObject *module = PyModule_Create(&moduledef);
+#else
+    PyObject *module = Py_InitModule("cext", cext_methods);
+#endif
     import_array();
 
+    if (module == NULL)
+        INITERROR;
+    struct module_state *st = GETSTATE(module);
+
+    st->error = PyErr_NewException("cext.Error", NULL, NULL);
+    if (st->error == NULL) {
+        Py_DECREF(module);
+        INITERROR;
+    }
+
+#if PY_MAJOR_VERSION >= 3
+    return module;
+#endif
 }
+
+// END NEW SETUP

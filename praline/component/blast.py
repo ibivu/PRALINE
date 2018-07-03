@@ -3,7 +3,7 @@
 .. moduleauthor:: Maurits Dijkstra <mauritsdijkstra@gmail.com>
 
 """
-from __future__ import division
+from __future__ import division, absolute_import, print_function
 
 import subprocess
 import shutil
@@ -41,7 +41,7 @@ class BlastPlusSequenceFinder(Component):
     """
     tid = "praline.component.BlastPlusSequenceFinder"
 
-    inputs = {'sequence': Port(Sequence.tid), 
+    inputs = {'sequence': Port(Sequence.tid),
               'track_id': Port(str)}
     outputs = {'sequences': Port([Sequence.tid])}
 
@@ -75,7 +75,7 @@ class BlastPlusSequenceFinder(Component):
         program_path = os.path.join(blast_root, 'bin', program)
         db_program_path = os.path.join(blast_root, 'bin', 'blastdbcmd')
 
-        temp_root = tempfile.mkdtemp()      
+        temp_root = tempfile.mkdtemp()
         blast_output_path = os.path.join(temp_root, 'blast.out')
         input_fasta_path = os.path.join(temp_root, 'input.fasta')
         output_fasta_path = os.path.join(temp_root, 'output.fasta')
@@ -88,7 +88,7 @@ class BlastPlusSequenceFinder(Component):
         try:
             write_sequence_fasta(input_fasta_path, [sequence], track_id)
             with open(blast_output_path, 'w') as fo:
-                args = [program_path, "-query", input_fasta_path, "-db", 
+                args = [program_path, "-query", input_fasta_path, "-db",
                         db_name, "-outfmt", "5"]
                 subprocess.check_call(args, stdout=fo)
 
@@ -137,7 +137,7 @@ class PsiBlastPlusSequenceFinder(Component):
     """
     tid = "praline.component.PsiBlastPlusSequenceFinder"
 
-    inputs = {'sequence': Port(Sequence.tid), 
+    inputs = {'sequence': Port(Sequence.tid),
               'track_id': Port(str)}
     outputs = {'sequences': Port([Sequence.tid])}
 
@@ -171,7 +171,7 @@ class PsiBlastPlusSequenceFinder(Component):
         program_path = os.path.join(blast_root, 'bin', 'psiblast')
         db_program_path = os.path.join(blast_root, 'bin', 'blastdbcmd')
 
-        temp_root = tempfile.mkdtemp()      
+        temp_root = tempfile.mkdtemp()
         blast_output_path = os.path.join(temp_root, 'blast.out')
         input_fasta_path = os.path.join(temp_root, 'input.fasta')
         output_fasta_path = os.path.join(temp_root, 'output.fasta')
@@ -186,9 +186,9 @@ class PsiBlastPlusSequenceFinder(Component):
         try:
             write_sequence_fasta(input_fasta_path, [sequence], track_id)
             with open(blast_output_path, 'w') as fo:
-                args = [program_path, "-query", input_fasta_path, "-db", 
-                        db_name, "-outfmt", "5", "-inclusion_ethresh", 
-                        str(profile_evalue), "-num_iterations", 
+                args = [program_path, "-query", input_fasta_path, "-db",
+                        db_name, "-outfmt", "5", "-inclusion_ethresh",
+                        str(profile_evalue), "-num_iterations",
                         str(num_iterations)]
                 subprocess.check_call(args, stdout=fo)
 
@@ -214,7 +214,7 @@ class PsiBlastPlusSequenceFinder(Component):
 
 def _parse_xml(f):
     doc = parse(f)
-    
+
     iterations_elem = doc.getElementsByTagName('BlastOutput_iterations')[0]
     iteration_elems = iterations_elem.getElementsByTagName('Iteration')
     max_num = -1
@@ -245,7 +245,3 @@ def _get_text(nodelist):
         if node.nodeType == node.TEXT_NODE:
             rc.append(node.data)
     return ''.join(rc)
-
-
-
-

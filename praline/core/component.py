@@ -4,7 +4,12 @@
 
 """
 
-from exception import *
+from __future__ import division, absolute_import, print_function
+
+import six
+
+from .exception import *
+
 
 MESSAGE_KIND_BEGIN = "begin"
 MESSAGE_KIND_PROGRESS = "progress"
@@ -12,7 +17,7 @@ MESSAGE_KIND_COMPLETE = "complete"
 MESSAGE_KIND_ERROR = "error"
 MESSAGE_KIND_LOG = "log"
 
-ALLOWED_PRIMITIVE_TYPES = {int, float, str, bool, unicode}
+ALLOWED_PRIMITIVE_TYPES = {int, float, str, bool, six.text_type}
 
 class Component(object):
     """Component superclass. You should never instantiate this directly.
@@ -31,11 +36,11 @@ class Component(object):
     outputs = {}
 
     def __init__(self, manager, environment, tag):
-        for port in self.inputs.itervalues():
+        for port in six.itervalues(self.inputs):
             _valid_signature(port.signature)
-        for port in self.outputs.itervalues():
+        for port in six.itervalues(self.outputs):
             _valid_signature(port.signature)
-        for signature in self.options.itervalues():
+        for signature in six.itervalues(self.options):
             _valid_signature(signature)
 
         self.manager = manager
@@ -154,10 +159,10 @@ class Environment(Container):
         d = {}
 
         for source in sources:
-            for key, value in source.iteritems():
+            for key, value in six.iteritems(source):
                 d[key] = value
 
-        for key, value in d.iteritems():
+        for key, value in six.iteritems(d):
             if isinstance(value, Environment):
                 envsources = []
                 for source in sources:
@@ -177,7 +182,7 @@ class Environment(Container):
 
         d = {}
         d['items'] = []
-        for key, value in self.keys.iteritems():
+        for key, value in six.iteritems(self.keys):
             d['items'].append((key, value))
             if isinstance(value, Container):
                 if not value in os:

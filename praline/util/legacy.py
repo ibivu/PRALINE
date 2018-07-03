@@ -4,7 +4,10 @@
 
 """
 
+from __future__ import division, absolute_import, print_function
+
 import numpy as np
+from six.moves import range
 
 MINUS_INFINITY = -(2**32)
 
@@ -77,7 +80,7 @@ class AlignmentAlgorithm(object):
         max_len = gap_scores.shape[1]
         gap_cumulative_scores = np.empty(gap_scores.shape[0], dtype=np.float32)
         acc = 0.0
-        for i in xrange(gap_cumulative_scores.shape[0]):
+        for i in range(gap_cumulative_scores.shape[0]):
             if i < max_len:
                 gap_score = gap_scores[0, i]
             else:
@@ -92,8 +95,8 @@ class AlignmentAlgorithm(object):
         """Yields the two-dimensional indices corresponding to
         the cells of the dynamic programming matrix."""
         n, m = self.shape
-        for x in xrange(n):
-            for y in xrange(m):
+        for x in range(n):
+            for y in range(m):
                 yield (x, y)
 
     def resolve_all(self):
@@ -152,7 +155,7 @@ class AlignmentAlgorithm(object):
                     score_matrix = self.score_matrices[k]
                     mat = np.array(score_matrix, dtype=np.float32)
                     ndim = mat.ndim
-                    for x in xrange(ndim):
+                    for x in range(ndim):
                         dim = ndim - x - 1
                         item = item_set[dim]
                         if dim % 2:
@@ -161,13 +164,13 @@ class AlignmentAlgorithm(object):
                             idx = n - 1
 
                         if types[dim] == TYPE_SEQUENCE:
-                            aop = [slice(None) for d in xrange(dim)]
+                            aop = [slice(None) for d in range(dim)]
                             aop.append(item[idx])
 
                             mat = mat[tuple(aop)]
                         else:
                             v = item[idx, :]
-                            aop = [np.newaxis for d in xrange(dim)]
+                            aop = [np.newaxis for d in range(dim)]
                             aop.append(slice(None))
                             mat = (v[tuple(aop)] * mat).sum(axis=dim)
                     match_score += mat
@@ -293,8 +296,8 @@ class SemiGlobalAlignmentAlgorithm(AlignmentAlgorithm):
         """Yields the two-dimensional indices corresponding to
         the cells of the dynamic programming matrix."""
         n, m = self.shape
-        for x in xrange(1, n):
-            for y in xrange(1, m):
+        for x in range(1, n):
+            for y in range(1, m):
                 yield (x, y)
 
     def get_score(self):
@@ -316,5 +319,5 @@ def window(l, size = 2):
     :param l: the list to slide a window over
     :param size: the window size:
     """
-    for n in xrange(len(l) - size + 1):
-        yield tuple(n+m for m in xrange(size))
+    for n in range(len(l) - size + 1):
+        yield tuple(n+m for m in range(size))

@@ -3,6 +3,7 @@
 .. moduleauthor:: Maurits Dijkstra <mauritsdijkstra@gmail.com>
 
 """
+from six.moves import range
 
 def split_len(seq, length=78):
     """Split a sequence into chunks of at most a given length.
@@ -33,8 +34,8 @@ def window(l, size = 2):
     :param l: the list to slide a window over
     :param size: the window size:
     """
-    for n in xrange(len(l) - size + 1):
-        yield tuple(n+m for m in xrange(size))
+    for n in range(len(l) - size + 1):
+        yield tuple(n+m for m in range(size))
 
 def blocks(s, size=78):
     """Split a string into blocks of at most a given length.
@@ -44,4 +45,4 @@ def blocks(s, size=78):
     :returns: a list of lists containing all the blocks for the string
 
     """
-    return [s[i:i+size] for i in xrange(0, len(s), size)]
+    return [s[i:i+size] for i in range(0, len(s), size)]

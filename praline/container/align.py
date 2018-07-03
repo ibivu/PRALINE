@@ -3,7 +3,10 @@
 .. moduleauthor:: Maurits Dijkstra <mauritsdijkstra@gmail.com>
 
 """
+from __future__ import division, absolute_import, print_function
+
 import numpy as np
+from six.moves import range
 
 from praline.core import *
 from praline.util import window
@@ -40,7 +43,7 @@ class Alignment(Container):
         path_component_one = np.zeros(size_one, dtype=int)
         path_component_two = np.zeros(size_two, dtype=int)
 
-        for i in xrange(path.shape[0]):
+        for i in range(path.shape[0]):
             idx_one = path[i, 0]
             if idx_one >= 0:
                 path_component_one[i, :] = self.path[idx_one, :]
@@ -56,6 +59,3 @@ class Alignment(Container):
         merged_sequences = self.items+alignment.items
 
         return Alignment(merged_sequences, merged_path)
-    
-
-

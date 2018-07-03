@@ -3,9 +3,11 @@
 .. moduleauthor:: Maurits Dijkstra <mauritsdijkstra@gmail.com>
 
 """
-from __future__ import division
+from __future__ import division, absolute_import, print_function
 
 import numpy as np
+import six
+from six.moves import range
 
 from praline import write_alignment_clustal
 from praline.core import *
@@ -15,6 +17,7 @@ from praline.container import TRACK_ID_PREPROFILE, TRACK_ID_PROFILE
 from praline.container import SequenceTree, Alignment
 from praline.component import PairwiseAligner
 from praline.util import auto_align_mode
+
 
 MINUS_INFINITY = -(2 ** 32)
 
@@ -78,7 +81,7 @@ class TreeMultipleSequenceAligner(Component):
                         alphabet = track.alphabet
                         counts = np.zeros((len(track), alphabet.size),
                                           dtype=np.int32)
-                        for j in xrange(len(track)):
+                        for j in range(len(track)):
                             counts[j, track.values[j]] = 1
                         new_track = ProfileTrack(counts, track.alphabet)
                     elif track.tid == ProfileTrack.tid:
@@ -242,7 +245,7 @@ class TreeMultipleSequenceAligner(Component):
 
             yield LogMessage(path_to_url(archive_path))
 
-        yield CompleteMessage(outputs={'alignment': alignments.values()[0]})
+        yield CompleteMessage(outputs={'alignment': list(alignments.values())[0]})
 
 class AdHocMultipleSequenceAligner(Component):
     """The AdHocMultipleSequenceAligner is a component that performs a
@@ -320,7 +323,7 @@ class AdHocMultipleSequenceAligner(Component):
                         alphabet = track.alphabet
                         counts = np.zeros((len(track), alphabet.size),
                                           dtype=np.int32)
-                        for j in xrange(len(track)):
+                        for j in range(len(track)):
                             counts[j, track.values[j]] = 1
                         new_track = ProfileTrack(counts, track.alphabet)
                     elif track.tid == ProfileTrack.tid:
@@ -480,17 +483,17 @@ class AdHocMultipleSequenceAligner(Component):
 
             yield LogMessage(path_to_url(archive_path))
 
-        yield CompleteMessage(outputs={'alignment': alignments.values()[0]})
+        yield CompleteMessage(outputs={'alignment': list(alignments.values())[0]})
 
     def _merge_indices(self, clusters, dist_mode, track_id_sets,
                        score_matrices):
         index = self.manager.index
 
-        clustlist = clusters.values()
+        clustlist = list(clusters.values())
 
-        cluster_map = {e: i for i, e in clusters.iteritems()}
+        cluster_map = {e: i for i, e in six.iteritems(clusters)}
         index_map = {i: cluster_map[e] for i, e in enumerate(clustlist)}
-        r_index_map = {e: i for i, e in index_map.iteritems()}
+        r_index_map = {e: i for i, e in six.iteritems(index_map)}
 
         s = np.empty((len(clustlist), len(clustlist)), dtype=np.float32)
         s.fill(MINUS_INFINITY)
