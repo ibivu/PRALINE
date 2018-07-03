@@ -3,6 +3,8 @@
 .. moduleauthor:: Maurits Dijkstra <mauritsdijkstra@gmail.com>
 
 """
+from __future__ import division, absolute_import, print_function
+
 from six.moves import range
 
 def split_len(seq, length=78):
@@ -24,7 +26,7 @@ def pad(s, length):
 
     """
     pad_length = length-len(s)
-    
+
     return s + (" " * pad_length)
 
 def window(l, size = 2):
