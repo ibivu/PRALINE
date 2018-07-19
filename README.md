@@ -25,7 +25,7 @@ Reimplementation of the PRALINE multiple sequence alignment program.
 
 ## Requirements
 
-* Python 2.7 (Python 3 support is forthcoming)
+* Python 2.7 / Python 3.6 (earlier 3.x versions may also work, but have not been tested)
 * A C compiler (C99 support required)
 * NCBI BLAST+ (optional, for homology searching using PSI-BLAST)
 
