@@ -64,12 +64,12 @@ def main():
     keys['linkage_method'] = args.tree_linkage
     keys['waterman_eggert_iterations'] = args.num_preprofile_alignments
     keys['debug'] = args.debug
-    if args.merge_global:
-        keys['merge_mode'] = 'global'
+    if args.merge_semiglobal_auto:
+        keys['merge_mode'] = 'semiglobal_auto'
     elif args.merge_semiglobal:
         keys['merge_mode'] = 'semiglobal'
     else:
-        keys['merge_mode'] = 'semiglobal_auto'
+        keys['merge_mode'] = 'global'
 
     if args.dist_semiglobal_auto:
         keys['dist_mode'] = 'semiglobal_auto'

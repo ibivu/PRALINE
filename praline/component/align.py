@@ -5,6 +5,8 @@
 """
 from __future__ import division, absolute_import, print_function
 
+import itertools
+
 import numpy as np
 from six.moves import range, zip
 
@@ -32,7 +34,7 @@ _CEXT_ALIGN_FUNCTIONS = {"local": cext_align_local,
 
 _ALIGN_FUNCTIONS = {"local": align_local,
                     "global": align_global,
-                    "semiglobal": align_semiglobal}
+                    "semiglobal_both": align_semiglobal}
 
 class LegacyPairwiseAligner(Component):
     """The LegacyPairwiseAligner used to be the main 'pure Python'
@@ -208,7 +210,7 @@ class LegacyPairwiseAligner(Component):
 
             o = swa.matrix
             t = swa.traceback
-        elif mode == 'semiglobal':
+        elif mode == 'semiglobal_both':
             sgaa = SemiGlobalAlignmentAlgorithm(input_sets, raw_score_matrices,
                                                gap_scores_one, gap_scores_two,
                                                zero_idxs)
@@ -608,7 +610,7 @@ class RawPairwiseAligner(Component):
             t[1:, 0, 1] = TRACEBACK_INSERT_UP_EXTEND
 
         if mode in {"semiglobal_both", "semiglobal_two"}:
-            o[:, 0, 2] = 0
+            o[0, :, 2] = 0
         else:
             o[0, 0, 2] = g2[0, 0] - g2[0, 1]
             o[0, 1:, 2] = (np.arange(o.shape[1]-1) * g2[:, 1]) + g2[0, 0]
@@ -625,7 +627,7 @@ class RawPairwiseAligner(Component):
             np.savetxt(log.path("dp_1_matrix.csv"), o[:, :, 1], delimiter=",")
             np.savetxt(log.path("dp_2_matrix.csv"), o[:, :, 2], delimiter=",")
 
-            np.savetxt(log.path("tb_matrix.csv"), t[:, :, 0], delimiter=",")
+            np.savetxt(log.path("tb_0_matrix.csv"), t[:, :, 0], delimiter=",")
             np.savetxt(log.path("tb_1_matrix.csv"), t[:, :, 1], delimiter=",")
             np.savetxt(log.path("tb_2_matrix.csv"), t[:, :, 2], delimiter=",")
 
@@ -634,7 +636,7 @@ class RawPairwiseAligner(Component):
             score = o[cell]
             paths = get_paths(t, cell=cell)
         elif mode in {"semiglobal_both", "semiglobal_one", "semiglobal_two"}:
-            n, m = o.shape
+            n, m, _ = o.shape
             last_row = o[n-1, :, :]
             last_col = o[:, m-1, :]
             last_row_max = last_row.max()
@@ -642,17 +644,16 @@ class RawPairwiseAligner(Component):
             trace_from_row = mode in {"semiglobal_both", "semiglobal_two"}
 
             if last_row_max > last_col_max and trace_from_row:
-                for i in range(m-1, -1, -1):
-                    for j in range(3):
-                        if last_row[i, j] == last_row_max:
-                            break
-                cell = (n-1, i, j)
+                for i, j in itertools.product(range(m-1, -1, -1), range(3)):
+                    if last_row[i, j] == last_row_max:
+                        cell = (n-1, i, j)
+                        break
             else:
-                for i in range(n-1, -1, -1):
-                    for j in range(3):
-                        if last_col[i, j] == last_col_max:
-                            break
-                cell = (i, m-1, j)
+                for i, j in itertools.product(range(n-1, -1, -1), range(3)):
+                    if last_col[i, j] == last_col_max:
+                        cell = (i, m-1, j)
+                        break
+
             score = o[cell]
             paths = [np.array(path) for path in get_paths(t, cell=cell)]
             paths = [extend_path_semiglobal(path, (n, m)) for path in paths]
