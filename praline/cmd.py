@@ -15,7 +15,7 @@ from praline import load_score_matrix, load_sequence_fasta, open_builtin
 from praline import write_alignment_clustal, write_alignment_fasta
 from praline.core import *
 from praline.component import PralineMultipleSequenceAlignmentWorkflow
-from praline.component import LegacyPairwiseAligner, PairwiseAligner
+from praline.component import PairwiseAligner
 from praline.container import ALPHABET_AA, TRACK_ID_INPUT
 from praline.util import run, write_log_structure
 
@@ -63,6 +63,7 @@ def main():
     keys['score_threshold'] = args.preprofile_score
     keys['linkage_method'] = args.tree_linkage
     keys['waterman_eggert_iterations'] = args.num_preprofile_alignments
+    keys['aligner'] = PairwiseAligner.tid
     keys['debug'] = args.debug
     if args.merge_semiglobal_auto:
         keys['merge_mode'] = 'semiglobal_auto'
@@ -97,11 +98,6 @@ def main():
         keys['accelerate'] = False
     else:
         keys['accelerate'] = True
-
-    if args.pairwise_legacy:
-        keys['aligner'] = LegacyPairwiseAligner.tid
-    else:
-        keys['aligner'] = PairwiseAligner.tid
 
     try:
         keys['blast_plus_root'] = os.environ['BLAST_PLUS_ROOT']
@@ -170,9 +166,6 @@ def parse_args():
     parser.add_argument("--no-accelerate", default=False,
                         dest="no_accelerate", action="store_true",
                         help="disable acceleration by C python extension")
-    parser.add_argument("--pairwise-legacy", default=False,
-                        dest="pairwise_legacy", action="store_true",
-                        help="use the legacy pairwise aligner")
     parser.add_argument("--preprofile-alignments", default=2,
                         dest="num_preprofile_alignments", type=int,
                         help="local preprofile alignments per sequence")

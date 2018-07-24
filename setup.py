@@ -16,7 +16,6 @@ entry_points.append('ProfileBuilder = praline.component:ProfileBuilder')
 entry_points.append('GuideTreeBuilder = praline.component:GuideTreeBuilder')
 entry_points.append('BlastPlusSequenceFinder = praline.component:BlastPlusSequenceFinder')
 entry_points.append('PsiBlastPlusSequenceFinder = praline.component:PsiBlastPlusSequenceFinder')
-entry_points.append('LegacyPairwiseAligner = praline.component:LegacyPairwiseAligner')
 entry_points.append('RawPairwiseAligner = praline.component:RawPairwiseAligner')
 entry_points.append('PralineMultipleSequenceAlignmentWorkflow = praline.component:PralineMultipleSequenceAlignmentWorkflow')
 

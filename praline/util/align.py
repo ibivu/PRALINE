@@ -11,11 +11,6 @@ from six.moves import range
 
 from .support import window
 
-# Traceback bit flags for the pairwise reference (legacy) aligner.
-TRACEBACK_UP = 1 << 1
-TRACEBACK_LEFT = 1 << 2
-TRACEBACK_DIAG = 1 << 3
-
 # Traceback bit flags for the optimized pairwise aligner.
 TRACEBACK_MATCH_MATCH = 1 << 1
 TRACEBACK_MATCH_INSERT_UP = 1 << 2
@@ -188,35 +183,6 @@ def get_paths(traceback, cell, strip_third_dim=True):
         return [[(n, m) for n, m, k in path]]
     else:
         return [path]
-
-def get_paths_legacy(traceback, cell):
-    """Traces the path the alignment takes through the score matrix. Starts
-    at the bottom rightmost cell.
-
-    :param traceback: traceback matrix to trace the path in
-    :param cell: index of the cell to start tracing at
-    :returns: a list of traced paths
-
-    """
-    path = [cell]
-
-    while True:
-        n, m = cell
-
-        if traceback[n, m] & TRACEBACK_DIAG:
-            cell = (n - 1, m - 1)
-        elif traceback[n, m] & TRACEBACK_UP:
-            cell = (n - 1, m)
-        elif traceback[n, m] & TRACEBACK_LEFT:
-            cell = (n, m - 1)
-        else:
-            break
-
-        path.append(cell)
-
-    path.reverse()
-    return [path]
-
 
 def get_frequencies(alignment, trid):
     """Calculate the occurence frequency of each symbol in a given
