@@ -37,4 +37,4 @@ You can install PRALINE by cloning this repository and running (in a shell):
 
 PRALINE is also available on PyPI. You can install it with the following command:
 
-`pip install praline`
+`pip install praline-aln`
