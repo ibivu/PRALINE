@@ -11,6 +11,7 @@ from pkg_resources import resource_stream
 import codecs
 
 import numpy as np
+from six import iteritems
 from six.moves import range, zip
 
 from praline.container import ScoreMatrix, Alphabet, Sequence, PlainTrack
@@ -509,6 +510,72 @@ def write_pssm(f, sequence, master_trid, profile_trid, score_matrix, encoding='u
         should_close = True
 
     f.write(data)
+
+    if should_close:
+        f.close()
+
+
+def write_features_jalview(f, sequences, trids, descriptions, colors):
+    """Write annotations of a set of sequences in Jalview's sequence feature format.
+
+    :param f: a filename or file object to write the sequences to
+    :param sequences: the collection of sequences to write
+    :param trids: the track id or a list of track ids containing the track(s) to write.
+    :param descriptions: the description of the sequence features or a list of
+        descriptions of the sequence features, one per track
+    :param color: a dict, or a list of dicts, containing a mapping from
+        symbol types to HTML color values; symbols omitted will not be annotated
+
+    """
+    if not isinstance(trids, list):
+        trids = [trids]
+    if not isinstance(descriptions, list):
+        descriptions = [descriptions]
+    if not isinstance(colors, list):
+        colors = [colors]
+
+    header_rows = []
+    types_written = set()
+    rows = []
+    for i, seq in enumerate(sequences):
+        name = seq.name.split()[0]
+        for trid, description, color_map in zip(trids, descriptions, colors):
+            track = seq.get_track(trid)
+
+            if track.tid != PlainTrack.tid:
+                s = "can only write plain tracks to a Jalview " \
+                    "sequence feature file"
+                raise DataError(s)
+
+            alphabet = track.alphabet
+            idx_to_type = {}
+            for symbol, color in six.iteritems(color_map):
+                idx = alphabet.symbol_to_index(symbol)
+                type_ = "{}_{}".format(trid, symbol)
+
+                idx_to_type[idx] = type_
+
+                if not type_ in types_written:
+                    header_rows.append([type_, color])
+                    types_written.add(type_)
+
+            for j, symbol_idx in enumerate(track.values):
+                if not symbol_idx in idx_to_type:
+                    continue
+
+                row = [description, name, "-1", str(j + 1), str(j + 1),
+                       idx_to_type[symbol_idx]]
+                rows.append(row)
+
+    lines = ["\t".join(row) for row in header_rows + rows]
+
+    should_close = False
+    if isinstance(f, str):
+        f = codecs.open(f, 'w', 'ascii')
+        should_close = True
+
+    f.write("\n".join(lines))
+    f.write("\n")
 
     if should_close:
         f.close()
