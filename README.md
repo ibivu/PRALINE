@@ -1,6 +1,6 @@
-# PRALINE
+# PRALINE 2
 
-Reimplementation of the PRALINE multiple sequence alignment program.
+PRALINE 2, a reimplementation of the PSI-PRALINE multiple sequence alignment program.
 
 # Features
 
@@ -21,7 +21,7 @@ Reimplementation of the PRALINE multiple sequence alignment program.
 * Heuristics to speed up tree building for large numbers of sequences
 * Better multithreading for improved scaling on many-core systems
 
-# Installing PRALINE
+# Installing PRALINE 2
 
 ## Requirements
 
@@ -31,10 +31,10 @@ Reimplementation of the PRALINE multiple sequence alignment program.
 
 ## Instructions
 
-You can install PRALINE by cloning this repository and running (in a shell):
+You can install PRALINE 2 by cloning this repository and running (in a shell):
 
 `python setup.py install`
 
-PRALINE is also available on PyPI. You can install it with the following command:
+PRALINE 2 is also available on PyPI. You can install it with the following command:
 
 `pip install praline-aln`
