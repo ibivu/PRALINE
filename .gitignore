@@ -9,3 +9,4 @@ _build/
 .DS_Store
 *.egg
 dist/
+.ipynb_checkpoints
