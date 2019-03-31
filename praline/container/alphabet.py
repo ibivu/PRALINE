@@ -99,7 +99,7 @@ def _generate_mappings(symbols):
 
 _SYMBOLS_AA = [u'A', u'R', u'N', u'D', u'C', u'E', u'Q', u'G', u'H', u'I',
                u'L', u'K', u'M', u'F', u'P', u'S', u'T', u'W', u'Y', u'V',
-               u'U', u'O', u'B', u'Z', u'J', u'X']
+               u'U', u'O', u'B', u'Z', u'J', u'X', u'*']
 _MAPPINGS_AA = _generate_mappings(_SYMBOLS_AA)
 ALPHABET_AA = Alphabet('praline.alphabet.AAOneLetter', _MAPPINGS_AA)
 

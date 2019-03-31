@@ -79,8 +79,6 @@ def load_score_matrix(f, alphabet=None, encoding='utf-8'):
 
     symbol_map = {}
     for i, symbol in enumerate(lines[0]):
-        if symbol == "*":
-            continue
         symbol_map[i] = symbol
 
     scores = {}
@@ -90,8 +88,6 @@ def load_score_matrix(f, alphabet=None, encoding='utf-8'):
             try:
                 symbol_two = symbol_map[i]
             except KeyError:
-                continue
-            if "*" in {symbol_one, symbol_two}:
                 continue
             scores[symbol_one, symbol_two] = float(value)
 
